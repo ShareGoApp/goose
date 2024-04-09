@@ -1,0 +1,20 @@
+# python base image 
+FROM python:3.11-slim-bullseye
+
+# set working directory
+WORKDIR /code
+
+# copy requirements to working directory
+COPY ./requirements.txt /code/requirements.txt
+
+# install newest version of pip
+RUN python -m pip install --upgrade pip
+
+# install app packages from requirements
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+
+# copy the application code to working directory
+COPY ./app /code/app
+
+# execute run api command
+CMD ["python", "app/main.py"]
