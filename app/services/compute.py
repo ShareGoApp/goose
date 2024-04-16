@@ -7,7 +7,7 @@ from tslearn.metrics import dtw
 import numpy as np
 
 # utils
-from ..utils.time import convert_to_unix
+from utils.time import convert_to_unix
 
 class Compute:
     def __init__(self):

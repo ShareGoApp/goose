@@ -18,7 +18,7 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        docker build -t fredebode/fugazi-reports:latest .
-        docker push fredebode/fugazi-reports:latest
+        docker build -t fredebode/goose:latest .
+        docker push fredebode/goose:latest
       env:
         DOCKER_BUILDKIT: 1

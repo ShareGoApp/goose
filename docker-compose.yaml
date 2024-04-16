@@ -1,0 +1,25 @@
+services:
+  user-service:
+    image: fredebode/goose:latest
+    ports:
+      - "8000:80" # Map port 80 -> 7002
+    environment:
+      - DB_PROTOCOL=${DB_PROTOCOL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_QUERY_PARAMS=${DB_QUERY_PARAMS}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_DB=${REDIS_DB}
+      - REDIS_PROTOCOL=${REDIS_PROTOCOL}
+    depends_on:
+      - redis-stack
+
+  redis-stack:
+    image: redis/redis-stack:latest
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    environment:
+      REDIS_ARGS: "--save 60 1000 --appendonly yes" # Customize based on your requirements
