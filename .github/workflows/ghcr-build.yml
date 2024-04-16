@@ -18,7 +18,7 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        docker build -t ShareGoApp/goose:latest .
-        docker push ghcr.io/ShareGoApp/goose:latest
+        docker build -t sharegoapp/goose:latest .
+        docker push ghcr.io/sharegoapp/goose:latest
       env:
         DOCKER_BUILDKIT: 1
