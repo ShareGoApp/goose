@@ -14,8 +14,14 @@ db_params = os.getenv("DB_QUERY_PARAMS")
 
 
 # Database connection
-# db_uri = f"{db_protocol}://{db_user}:{db_pass}@{db_host}/?{db_params}"
-db_uri = "mongodb+srv://admin:trSYnDgUGEh1UirS@sharegocluster.qd9gubk.mongodb.net/"
+db_org = f"{db_protocol}://{db_user}:{db_pass}@{db_host}"
+db_uri = "mongodb+srv://admin:trSYnDgUGEh1UirS@sharegocluster.qd9gubk.mongodb.net"
+
+# FIXME: something is weird here
+print("org: " + db_org)
+print("new: " + db_uri)
+print(db_uri == db_org)
+
 
 client = MongoClient(db_uri, tlsCAFile=certifi.where())
 database = client.get_database("db")
