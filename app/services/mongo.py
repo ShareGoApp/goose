@@ -37,17 +37,31 @@ class MongoService:
 
     
     async def get_drivers_in_range(self, id):
-        # Define the point near which you want to find locations
-        query_point = {"type": "Point", "coordinates": [-73.965364, 40.782865]}
+        # Query for the document by its _id field
+        document = self.collection.find_one({"_id": id})
 
-        # Perform the geospatial query
-        result = self.collection.find(
-            {"location": {"$nearSphere": {"$geometry": query_point}}},
-            {"name": 1}  # Projection to include only the 'name' field in the result
-        )
+        if document:
+            return document
+        
+        start_lng = -73.987974
+        start_lat = 40.747776
+        max_dist  = 500
 
-        # Iterate over the result and print matching locations
-        for location in result:
-            self.logger.info(location)
+        # Query documents where the start position is 
+        # within the specified distance from the reference point
+        query = {
+            "features.geometry.coordinates": {
+                "$geoWithin": {
+                    "$centerSphere": [[start_lng, start_lat], max_dist / 6378137.0]
+                }
+            }
+        }
 
-        return result
+        # Perform the query
+        result = self.collection.find(query)
+
+        if result:
+            return []
+              
+        return []
+

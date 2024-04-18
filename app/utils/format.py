@@ -1,6 +1,7 @@
 # path: utils/time.py
 from datetime import datetime
 import numpy as np
+import json
 
 
 # convert datetime strings to unix format
@@ -28,6 +29,20 @@ def geojson_to_ndarray(geojson_data, logger):
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}")
         return None
+
+
+# destructuring incoming messages
+def destructure_message(message, logger):
+    try:
+        # Deserialize message, ex: geo_request:{json}
+        data = message["data"].decode("utf-8")
+        type_info, payload = data.split(":", 1)
+        payload = json.loads(payload)
+    except:
+        logger.warning("failed to destructure message")
+        return
+
+    return type_info, payload
 
 
 # DEPRICATED: extract data from GeoJSON features

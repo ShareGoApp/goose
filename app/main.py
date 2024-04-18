@@ -1,9 +1,7 @@
 from tslearn.metrics import dtw
 from loguru import logger
-
-# from rq import Queue, Worker
 import asyncio
-import json, math
+import json
 
 # database
 from database.redis import client as redis_conn
@@ -11,10 +9,11 @@ from database.mongodb import database as db
 
 # services
 from services.mongo import MongoService
+from services.redis import RedisService
 
 # utils
 from utils.format import geojson_to_ndarray
-from utils.compute import get_min_err
+from utils.format import destructure_message
 
 # models
 from models.messages import MatchRequest
@@ -25,16 +24,16 @@ logger.add("logs/goose_{time}.log", rotation="12:00", compression="zip", enqueue
 
 # services instances
 mongo = MongoService(db=db, logger=logger)
+redis = RedisService(client=redis_conn)
 
 
 # Handles incoming request for DTW compute
 async def handle_match_request(message):
-
-    message.id  # js
-    message["id"]  # python
+    pid = message["passenger_id"]
+    logger.info(f"handling match request for: {pid}")
 
     # get passenger from message
-    doc = await mongo.get_passenger(message["passenger_id"])
+    doc = await mongo.get_passenger(pid)
     doc_nd = geojson_to_ndarray(doc, logger)
 
     # get drivers from message
@@ -44,36 +43,69 @@ async def handle_match_request(message):
     # compute dtw from driver list
     results = [dtw(doc_nd, driver) for driver in drivers_nd]
 
-    return min(results)
+    # prepare message
+    next_msg = {
+        "passenger_id": pid,
+        "driver_ids": "661fc59bbc83e7536732d788",  # todo: change hardcoded
+        "min_err": min(results),
+    }
+
+    await redis.push_save_reqest(next_msg)
 
 
-# Hadnles incoming req. for geo driver limiting
+# Handles incoming req. for geo driver limitin
 async def handle_geo_request(message):
+    pid = message["passenger_id"]
+    logger.info(f"handling geo-lookup request for: {pid}")
+
     # get passenger from message
-    passenger_id = message["passenger_id"]
-    document = await mongo.get_passenger(passenger_id)
-    document_nd = geojson_to_ndarray(document, logger)
-    pass
+    doc = await mongo.get_passenger(pid)
+    doc_nd = geojson_to_ndarray(doc, logger)
+
+    # get suitable drivers
+    docd = await mongo.get_drivers_in_range(pid)
+    logger.success(docd)
+
+    # todo: change hardcoded
+    next_msg = {
+        "passenger_id": pid,
+        "driver_ids": [
+            "661fc59bbc83e7536732d788",
+            "661fc5c0bc83e7536732d789",
+        ],
+    }
+    await redis.push_match_request(next_msg)
+
+
+# Handles incoming req. for geo driver limitin
+async def handle_save_request(message):
+    pid = message["passenger_id"]
+    logger.info(f"handling save request for: {pid}")
+
+    # get passenger from message
+    doc = await mongo.get_passenger(pid)
+    doc_nd = geojson_to_ndarray(doc, logger)
+
+    # get suitable drivers
+    docd = await mongo.get_drivers_in_range(pid)
+
+    logger.success(docd)
 
 
 # Redis Pub/Sub Message Listener
-@logger.catch
 async def listener(channel):
     async for message in channel.listen():
         if message["type"] == "message":
-            try:
-                message = message["data"].decode("UTF-8")
-                message = json.loads(message)
+            msg_type, data = destructure_message(message, logger)
 
-                if MatchRequest(**message):
-                    await handle_match_request(message)
-                elif GeoRequest(**message):
-                    await handle_geo_request(message)
-                else:
-                    logger.warning("unknown message received")
-
-            except:
-                logger.warning("malfored message")
+            if msg_type == "mat_request":
+                await handle_match_request(data)
+            elif msg_type == "geo_request":
+                await handle_geo_request(data)
+            elif msg_type == "sav_request":
+                await handle_save_request(data)
+            else:
+                logger.warning("unknown message received")
 
 
 async def main():
@@ -83,17 +115,6 @@ async def main():
     # subscribe to main channel
     pubsub = redis_conn.pubsub()
     await pubsub.subscribe("main")
-
-    # demo message
-    message = json.dumps(
-        {
-            "type": "match_request",
-            "passenger_id": "661fc362bc83e7536732d787",
-            "driver_ids": ["661fc59bbc83e7536732d788", "661fc5c0bc83e7536732d789"],
-        }
-    )
-
-    await redis_conn.publish("main", message)
 
     # start listener
     await asyncio.gather(listener(pubsub))
