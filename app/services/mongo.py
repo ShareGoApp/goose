@@ -35,6 +35,7 @@ class MongoService:
         # Query for the document by its _id field
         document = self.collection.find_one({"_id": id})
 
+
         if document:
             return document
 
@@ -45,6 +46,7 @@ class MongoService:
 
         # Query documents within the specified distance from the reference point
         query = {
+            "_id": {"$ne": ObjectId(id)},  # Exclude document with the specified _id
             "features.geometry.coordinates": {
                 "$geoWithin": {
                     "$centerSphere": [[start_lng, start_lat], max_dist / 6378137.0]
@@ -56,10 +58,11 @@ class MongoService:
         cursor = self.collection.find(query)
 
         if cursor:
-            return [str(doc["_id"]) for doc in cursor]
+            list_ids = [str(doc["_id"]) for doc in cursor]
+            print(list_ids)
+            return list_ids
 
         return []
-
 
     # save a new document for match
     async def create_match_document(self, id):
