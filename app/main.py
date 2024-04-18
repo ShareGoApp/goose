@@ -13,37 +13,13 @@ from services.mongo import MongoService
 from services.converter import Converter
 
 # utils
-from utils.data import geojson_to_matrix
-# from utils.data import matrix_to_geojson
+from utils.format import geojson_to_ndarray
 
 # logger configuration
-logger.add("logs/{time}.log", rotation="12:00", compression="zip", enqueue=True)
+logger.add("logs/goose_{time}.log", rotation="12:00", compression="zip", enqueue=True)
 
-
-# load sample data
-with open("app/data/passenger.json", "r") as file:
-    drivers = json.load(file)
-
-with open("app/data/drivers.json", "r") as file:
-    passengers = json.load(file)
-
-
-# demo
-def get_passenger_by_id(id):
-    for p in passengers:
-        if p["id"] == id:
-            return p
-
-
-# demo
-def get_driver_by_id(id):
-    for d in drivers:
-        if d["id"] == id:
-            return d
-    return None
-
-
-def get_min_error_driver(p_data):
+# FIXME: not sure if this should be located here
+def get_min_error_driver(p_data, drivers):
     min_driver = math.inf
 
     for d in drivers:
@@ -58,49 +34,36 @@ def get_min_error_driver(p_data):
 # Redis Pub/Sub Message Listener
 @logger.catch
 async def listener(channel):
+    # init services
+    mongo = MongoService(db, logger)
+
+    doc_one = await mongo.get_passenger("661fc59bbc83e7536732d788")
+    doc1_nd = geojson_to_ndarray(doc_one)
+
+    doc_two = await mongo.get_passenger("661fc5c0bc83e7536732d789")
+    doc2_nd = geojson_to_ndarray(doc_two)
+
     async for message in channel.listen():
         if message["type"] == "message":
             request = message["data"].decode("UTF-8")
-            p = get_passenger_by_id(request)
-            logger.info(p)
+            p = await mongo.get_passenger(request)
+            p_nd = geojson_to_ndarray(p)
+            
+            # compute dist for 1
+            dist_one = dtw(p_nd, doc1_nd)
+            logger.info(dist_one)
 
-            p_converted = Converter.convert_data(p["data"])
-            logger.info(p_converted)
+            # compute dist for 2
+            dist_two = dtw(p_nd, doc2_nd)
+            logger.info(dist_two)
 
-            m_dist = get_min_error_driver(p["data"])
-            logger.info(m_dist)
-
-            # try:
-            #     distance = dtw(data_fmt, driver1_fmt)
-            #     logger.success(distance)
-            # except:
-            #     logger.error("failed to compute dtw")
+            # return min dist
+            logger.success(f"found min err: {min(dist_one, dist_two)}")
 
 
 async def main():
-    mongo = MongoService(db, logger)
-    converter = Converter(logger)
-
     # Info dump
     logger.success("server started")
-
-    # test: passenger
-    doc_p = await mongo.get_passenger("661fc362bc83e7536732d787")
-    doc_p_m = geojson_to_matrix(doc_p)
-    doc_p_nd = converter.convert_data(doc_p_m)
-
-    # test: driver
-    doc_d = await mongo.get_passenger("661fc5c0bc83e7536732d789")
-    doc_d_m = geojson_to_matrix(doc_d)
-    doc_d_nd = converter.convert_data(doc_d_m)
-
-    # test logging
-    logger.info(doc_p_nd)
-    logger.info(doc_d_nd)
-
-    # test: compute drift
-    distance = dtw(doc_p_nd, doc_d_nd)
-    logger.success(distance)
 
     # Subscribe to main channel
     pubsub = redisc.pubsub()
