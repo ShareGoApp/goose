@@ -27,5 +27,3 @@ geojson_str = json.dumps(geojson, indent=4)
 # Write the GeoJSON string to a file
 with open("converted.json", "w") as file:
     file.write(geojson_str)
-
-print("GeoJSON data has been written to converted.json.")

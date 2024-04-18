@@ -33,6 +33,6 @@ class MongoService:
 
         # Iterate over the result and print matching locations
         for location in result:
-            print(location)
+            self.logger.info(location)
 
         return result
