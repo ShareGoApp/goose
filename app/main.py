@@ -1,8 +1,9 @@
 from tslearn.metrics import dtw
 from loguru import logger
+from rq import Queue
 import asyncio
 import math
-import json
+
 
 # database
 from database.redis import client as redisc
@@ -10,7 +11,6 @@ from database.mongodb import database as db
 
 # services
 from services.mongo import MongoService
-from services.converter import Converter
 
 # utils
 from utils.format import geojson_to_ndarray
@@ -23,7 +23,7 @@ def get_min_error_driver(p_data, drivers):
     min_driver = math.inf
 
     for d in drivers:
-        d_data = Converter.convert_data(d["data"])
+        d_data = geojson_to_ndarray(d)
         dist = dtw(p_data, d_data)
         if dist < min_driver:
             min_driver = dist
@@ -38,16 +38,16 @@ async def listener(channel):
     mongo = MongoService(db, logger)
 
     doc_one = await mongo.get_passenger("661fc59bbc83e7536732d788")
-    doc1_nd = geojson_to_ndarray(doc_one)
+    doc1_nd = geojson_to_ndarray(doc_one, logger)
 
     doc_two = await mongo.get_passenger("661fc5c0bc83e7536732d789")
-    doc2_nd = geojson_to_ndarray(doc_two)
+    doc2_nd = geojson_to_ndarray(doc_two, logger)
 
     async for message in channel.listen():
         if message["type"] == "message":
             request = message["data"].decode("UTF-8")
             p = await mongo.get_passenger(request)
-            p_nd = geojson_to_ndarray(p)
+            p_nd = geojson_to_ndarray(p, logger)
             
             # compute dist for 1
             dist_one = dtw(p_nd, doc1_nd)
@@ -62,14 +62,17 @@ async def listener(channel):
 
 
 async def main():
-    # Info dump
+    # info dump
     logger.success("server started")
 
-    # Subscribe to main channel
+    # subscribe to main channel
     pubsub = redisc.pubsub()
     await pubsub.subscribe("main")
 
-    # Start listener
+    # create redis queue
+    # queue = Queue(redisc)
+
+    # start listener
     await asyncio.gather(listener(pubsub))
 
 
