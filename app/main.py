@@ -1,8 +1,5 @@
 from tslearn.metrics import dtw
-from dotenv import load_dotenv
-from datetime import datetime
 from loguru import logger
-import numpy as np
 import asyncio
 import math
 import json
@@ -17,7 +14,7 @@ from services.converter import Converter
 
 # utils
 from utils.data import geojson_to_matrix
-from utils.data import matrix_to_geojson
+# from utils.data import matrix_to_geojson
 
 # logger configuration
 logger.add("logs/{time}.log", rotation="12:00", compression="zip", enqueue=True)
@@ -81,19 +78,18 @@ async def listener(channel):
 
 
 async def main():
-    # Info dump
-    logger.success("server started")
-
-    # TODO: remove test code
     mongo = MongoService(db, logger)
     converter = Converter(logger)
 
-    # passenger
+    # Info dump
+    logger.success("server started")
+
+    # test: passenger
     doc_p = await mongo.get_passenger("661fc362bc83e7536732d787")
     doc_p_m = geojson_to_matrix(doc_p)
     doc_p_nd = converter.convert_data(doc_p_m)
 
-    # driver
+    # test: driver
     doc_d = await mongo.get_passenger("661fc5c0bc83e7536732d789")
     doc_d_m = geojson_to_matrix(doc_d)
     doc_d_nd = converter.convert_data(doc_d_m)
@@ -102,7 +98,7 @@ async def main():
     logger.info(doc_p_nd)
     logger.info(doc_d_nd)
 
-    # compute drift
+    # test: compute drift
     distance = dtw(doc_p_nd, doc_d_nd)
     logger.success(distance)
 

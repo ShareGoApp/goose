@@ -11,11 +11,11 @@ db_user = os.getenv("DB_USERNAME")
 db_pass = os.getenv("DB_PASSWORD")
 db_host = os.getenv("DB_HOST")
 db_params = os.getenv("DB_QUERY_PARAMS")
+db_uri = os.getenv("DB_URI")
 
 
 # Database connection
 db_org = f"{db_protocol}://{db_user}:{db_pass}@{db_host}"
-db_uri = "mongodb+srv://admin:trSYnDgUGEh1UirS@sharegocluster.qd9gubk.mongodb.net"
 
 # FIXME: something is weird here
 print("org: " + db_org)
