@@ -1,5 +1,6 @@
 from tslearn.metrics import dtw
 from loguru import logger
+from datetime import datetime
 import asyncio
 import json
 
@@ -18,6 +19,7 @@ from utils.format import destructure_message
 # models
 from models.messages import MatchRequest
 from models.messages import GeoRequest
+from models.messages import SaveRequest
 
 # logger configuration
 logger.add("logs/goose_{time}.log", rotation="12:00", compression="zip", enqueue=True)
@@ -25,33 +27,6 @@ logger.add("logs/goose_{time}.log", rotation="12:00", compression="zip", enqueue
 # services instances
 mongo = MongoService(db=db, logger=logger)
 redis = RedisService(client=redis_conn)
-
-
-# Handles incoming request for DTW compute
-async def handle_match_request(message):
-    pid = message["passenger_id"]
-    logger.info(f"handling match request for: {pid}")
-
-    # get passenger from message
-    doc = await mongo.get_passenger(pid)
-    doc_nd = geojson_to_ndarray(doc, logger)
-
-    # get drivers from message
-    drivers = await mongo.get_drivers(message["driver_ids"])
-    drivers_nd = [geojson_to_ndarray(driver, logger) for driver in drivers]
-
-    # compute dtw from driver list
-    results = [dtw(doc_nd, driver) for driver in drivers_nd]
-
-    # prepare message
-    next_msg = {
-        "passenger_id": pid,
-        "driver_ids": "661fc59bbc83e7536732d788",  # todo: change hardcoded
-        "min_err": min(results),
-    }
-
-    await redis.push_save_reqest(next_msg)
-
 
 # Handles incoming req. for geo driver limitin
 async def handle_geo_request(message):
@@ -64,17 +39,40 @@ async def handle_geo_request(message):
 
     # get suitable drivers
     docd = await mongo.get_drivers_in_range(pid)
-    logger.success(docd)
 
-    # todo: change hardcoded
     next_msg = {
         "passenger_id": pid,
-        "driver_ids": [
-            "661fc59bbc83e7536732d788",
-            "661fc5c0bc83e7536732d789",
-        ],
+        "driver_ids": docd,
     }
     await redis.push_match_request(next_msg)
+
+
+# Handles incoming request for DTW compute
+async def handle_match_request(message):
+    pid = message["passenger_id"]
+    logger.info(f"handling match request for: {pid}")
+
+    # get passenger from message
+    doc = await mongo.get_passenger(pid)
+    doc_nd = geojson_to_ndarray(doc, logger)
+
+    # get drivers from message
+    drivers = await mongo.get_driver_list(message["driver_ids"])
+    drivers_nd = [geojson_to_ndarray(driver, logger) for driver in drivers]
+
+    # compute dtw from driver list
+    results = [dtw(doc_nd, driver) for driver in drivers_nd]
+
+    print(results)
+
+    # prepare message
+    next_msg = {
+        "passenger_id": pid,
+        "driver_id": "661fc59bbc83e7536732d788",  # todo: change hardcoded
+        "min_err": min(results),
+    }
+
+    await redis.push_save_reqest(next_msg)
 
 
 # Handles incoming req. for geo driver limitin
@@ -82,14 +80,27 @@ async def handle_save_request(message):
     pid = message["passenger_id"]
     logger.info(f"handling save request for: {pid}")
 
-    # get passenger from message
-    doc = await mongo.get_passenger(pid)
-    doc_nd = geojson_to_ndarray(doc, logger)
+    # Convert partial response body to dict
+    dict = {}
 
-    # get suitable drivers
-    docd = await mongo.get_drivers_in_range(pid)
+    # Add metadataª
+    dict["created_at"] = datetime.now()
 
-    logger.success(docd)
+    # Add empty lists for content
+    dict["passenger_id"] = message["passenger_id"]
+    dict["driver_id"] = message["driver_id"]
+    dict["min_err"] = message["min_err"]
+
+    # Validate and create a Report instance
+    final_dict = SaveRequest(**dict)
+
+    # Insert report into the database
+    result = db.sample_matches.insert_one(
+        final_dict.model_dump(by_alias=True, exclude=["id"])
+    )
+
+    if not result:
+        logger.warning("was not able to create match result")
 
 
 # Redis Pub/Sub Message Listener

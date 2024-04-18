@@ -3,17 +3,16 @@ from bson import ObjectId
 # utils
 from utils.format import geojson_to_ndarray
 
+
 class MongoService:
     def __init__(self, db, logger):
         self.db = db
         self.collection = db["sample_rides"]
         self.logger = logger
-    
-    # method to query a specific passenger
+
+    # query a specific passenger
     async def get_passenger(self, id):
         document_id = ObjectId(id)
-
-        # Query for the document by its _id field
         document = self.collection.find_one({"_id": document_id})
 
         if document:
@@ -21,34 +20,30 @@ class MongoService:
         else:
             self.logger.error("no document found")
 
-    # method to query a list of drivers
-    async def get_drivers(self, ids):
-        # convert str list -> bson list
+    # query a list of drivers by id
+    async def get_driver_list(self, ids):
         id_objects = [ObjectId(id) for id in ids]
-
-        # query in collection
         result = self.collection.find({"_id": {"$in": id_objects}})
 
         if result:
             return result
         else:
             self.logger.warning("couldn't find documents")
-        
 
-    
+    # find drivers with start locations in range
     async def get_drivers_in_range(self, id):
         # Query for the document by its _id field
         document = self.collection.find_one({"_id": id})
 
         if document:
             return document
-        
+
+        # need to find the start position of the document.
         start_lng = -73.987974
         start_lat = 40.747776
-        max_dist  = 500
+        max_dist = 500
 
-        # Query documents where the start position is 
-        # within the specified distance from the reference point
+        # Query documents within the specified distance from the reference point
         query = {
             "features.geometry.coordinates": {
                 "$geoWithin": {
@@ -58,10 +53,14 @@ class MongoService:
         }
 
         # Perform the query
-        result = self.collection.find(query)
+        cursor = self.collection.find(query)
 
-        if result:
-            return []
-              
+        if cursor:
+            return [str(doc["_id"]) for doc in cursor]
+
         return []
 
+
+    # save a new document for match
+    async def create_match_document(self, id):
+        pass
