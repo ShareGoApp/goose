@@ -16,14 +16,6 @@ docker build -t fredebode/goose .
 docker run -d --name goose -p 80:80 fredebode/goose:latest
 ```
 
-```bash
-# build docker image
-docker build -t fredebode/goose .
-
-# push docker image to dockerhub
-docker push
-```
-
 # Libraries
 
 * **Loguru**: terminal logger w. easier file logging with rotation / retention / compression

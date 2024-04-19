@@ -1,5 +1,10 @@
 # python base image 
-FROM python:3.11-slim-bullseye
+FROM python:3.10-slim-bullseye
+
+# Install system dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gcc python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # set working directory
 WORKDIR /code

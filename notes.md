@@ -1,6 +1,6 @@
 
 
-# Use of Loguru
+## Use of Loguru
 
 ```python
 # available logging commands
@@ -12,3 +12,8 @@ logger.warning("Invalid configuration detected.")
 logger.error("Failed to connect to the database.")
 logger.critical("Unexpected system error occurred. Shutting down.")
 ```
+
+
+## GeoSpatial Queries (MongoDB)
+
+*  [link](https://www.mongodb.com/docs/manual/tutorial/geospatial-tutorial/)
