@@ -2,9 +2,18 @@
 
 Matching Engine for Passenger-to-Driver matching at RideNow
 
-- guide (docker)  : https://fastapi.tiangolo.com/deployment/docker/
-- guide (motor)   : https://motor.readthedocs.io/en/stable/tutorial-asyncio.html
-- guide (rest)    : https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design
+# Tools and Libraries
+
+## Core Tooling
+* Orchestration: [Docker Compose]()
+* Containerization: [Docker]()
+* Static Code Analysis: [CodeClimate](https://codeclimate.com/quality)
+
+## Core libraries
+* **asyncio**: async runtime
+* **redis-py**: python redis toolkit
+* **pymongo**: mongodb driver for python
+* **loguru**: logging w. rotation, retention and compression
 
 # Docker build commands
 
@@ -15,14 +24,6 @@ docker build -t fredebode/goose .
 # run docker image locally
 docker run -d --name goose -p 80:80 fredebode/goose:latest
 ```
-
-# Libraries
-
-* **Loguru**: terminal logger w. easier file logging with rotation / retention / compression
-* **asyncio**: async runtime
-* **redis**:
-* **pymongo**: low-level mongodb driver, to perfrom NoSQL operations
-
 
 ## GET methods
 A successful GET method typically returns HTTP status code 200 (OK). If the resource cannot be found, the method should return 404 (Not Found).
