@@ -2,7 +2,6 @@ from tslearn.metrics import dtw
 from loguru import logger
 from datetime import datetime
 import asyncio
-import json
 
 # database
 from database.redis import client as redis_conn
