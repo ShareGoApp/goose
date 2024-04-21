@@ -16,8 +16,8 @@ from utils.format import geojson_to_ndarray
 from utils.format import destructure_message
 
 # models
-from models.messages import MatchRequest
-from models.messages import GeoRequest
+# from models.messages import MatchRequest
+# from models.messages import GeoRequest
 from models.messages import SaveRequest
 
 # logger configuration
@@ -27,14 +27,11 @@ logger.add("logs/goose_{time}.log", rotation="12:00", compression="zip", enqueue
 mongo = MongoService(db=db, logger=logger)
 redis = RedisService(client=redis_conn)
 
+
 # Handles incoming req. for geo driver limitin
 async def handle_geo_request(message):
     pid = message["passenger_id"]
     logger.info(f"handling geo-lookup request for: {pid}")
-
-    # get passenger from message
-    doc = await mongo.get_passenger(pid)
-    doc_nd = geojson_to_ndarray(doc, logger)
 
     # get suitable drivers
     docd = await mongo.get_drivers_in_range(pid)
@@ -82,7 +79,7 @@ async def handle_save_request(message):
     # Convert partial response body to dict
     dict = {}
 
-    # Add metadataª
+    # Add metadata
     dict["created_at"] = datetime.now()
 
     # Add empty lists for content
@@ -94,9 +91,8 @@ async def handle_save_request(message):
     final_dict = SaveRequest(**dict)
 
     # Insert report into the database
-    result = db.sample_matches.insert_one(
-        final_dict.model_dump(by_alias=True, exclude=["id"])
-    )
+    document = final_dict.model_dump(by_alias=True, exclude=["id"])
+    result = db.sample_matches.insert_one(document)
 
     if not result:
         logger.warning("was not able to create match result")
@@ -120,7 +116,7 @@ async def listener(channel):
 
 async def main():
     # boot message
-    logger.success("goose is getting up and flying")
+    logger.success("goose is getting up and flying 🪿")
 
     # subscribe to main channel
     pubsub = redis_conn.pubsub()
