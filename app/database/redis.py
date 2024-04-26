@@ -1,16 +1,35 @@
 from dotenv import load_dotenv
+from loguru import logger
 import redis.asyncio as redis
 import os
 
-load_dotenv()  # load environment variables from .env file
+# utils
+from utils.env import get_variable, environment
+
 
 # access environment variables
-redis_host  = os.getenv("REDIS_HOST")
-redis_port  = int(os.getenv("REDIS_PORT"))
-redis_db    = int(os.getenv("REDIS_DB"))
-redis_proto = int(os.getenv("REDIS_PROTOCOL"))
+if environment == "dev":
+    # get from environment
+    redis_host = os.getenv("REDIS_HOST")
+    redis_port = int(os.getenv("REDIS_PORT"))
+    redis_db = int(os.getenv("REDIS_DB"))
+    redis_proto = int(os.getenv("REDIS_PROTOCOL"))
 
-# Redis connection
-client = redis.Redis(
-    host=redis_host, port=redis_port, db=redis_db, protocol=redis_proto
-)
+    # establish connection
+    client = redis.Redis(host=redis_host, port=redis_port, db=redis_db, protocol=redis_proto)
+
+if environment == "prod":
+    # get from environment
+    host = get_variable("REDIS_HOST")
+    port = get_variable("REDIS_PORT")
+    password = get_variable("REDIS_PASS")
+
+    print(host, password, port)
+
+    # establish connection 
+    # TODO: DO NOT PUSH THIS
+    client = redis.Redis(
+            host="redis-16338.c55.eu-central-1-1.ec2.redns.redis-cloud.com", 
+            port=16338, 
+            password="YvTl7daNIRKBQsq7fUrGZeTkPjxP4Ipx"
+        )

@@ -31,7 +31,7 @@ redis = RedisService(client=redis_conn)
 # Handles incoming req. for geo driver limitin
 async def handle_geo_request(message):
     pid = message["passenger_id"]
-    logger.info(f"handling geo-lookup request for: {pid}")
+    logger.info(f"[geo-lookup] handling request for: {pid}")
 
     # get suitable drivers
     docd = await mongo.get_drivers_in_range(pid)
@@ -48,7 +48,7 @@ async def handle_geo_request(message):
 # Handles incoming request for DTW compute
 async def handle_match_request(message):
     pid = message["passenger_id"]
-    logger.info(f"handling match request for: {pid}")
+    logger.info(f"[match] handling request for: {pid}")
 
     # get passenger from message
     doc = await mongo.get_passenger(pid)
@@ -74,7 +74,7 @@ async def handle_match_request(message):
 # Handles incoming req. for geo driver limitin
 async def handle_save_request(message):
     pid = message["passenger_id"]
-    logger.info(f"handling save request for: {pid}")
+    logger.info(f"[save] handling request for: {pid}")
 
     # Convert partial response body to dict
     dict = {}

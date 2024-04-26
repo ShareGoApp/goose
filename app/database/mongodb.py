@@ -1,20 +1,20 @@
 from pymongo import MongoClient
-from dotenv import load_dotenv
+from loguru import logger
 import certifi
-import os
 
-load_dotenv()  # load environment variables from .env file
 
-# access environment variables
-# db_protocol = os.getenv("DB_PROTOCOL")
-# db_user = os.getenv("DB_USERNAME")
-# db_pass = os.getenv("DB_PASSWORD")
-# db_host = os.getenv("DB_HOST")
-# db_params = os.getenv("DB_QUERY_PARAMS")
-conn_string = os.getenv("DB_STRING")
+# utils
+from utils.env import get_variable, environment
 
-# Database connection
-# db_org = f"{db_protocol}://{db_user}:{db_pass}@{db_host}"
+# get from environment
+db_str = get_variable("DB_STRING")
+client = MongoClient(db_str, tlsCAFile=certifi.where())
 
-client = MongoClient(conn_string, tlsCAFile=certifi.where())
-database = client.get_database("db")
+# switch on environment
+match environment:
+    case 'dev':
+        database = client.get_database("dev")
+    case 'prod':
+        database = client.get_database("prod")
+    case _:
+        logger.error("unknown database requested")
