@@ -1,9 +1,5 @@
 from bson import ObjectId
 
-# utils
-from utils.format import geojson_to_ndarray
-
-
 class MongoService:
     def __init__(self, db, logger):
         self.db = db
@@ -59,7 +55,6 @@ class MongoService:
 
         if cursor:
             list_ids = [str(doc["_id"]) for doc in cursor]
-            print(list_ids)
             return list_ids
 
         return []

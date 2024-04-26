@@ -23,3 +23,12 @@ services:
       - "8001:8001"
     environment:
       REDIS_ARGS: "--save 60 1000 --appendonly yes" # Customize based on your requirements
+
+  goose:
+    image: ghcr.io/sharegoapp/goose:latest
+    ports:
+    environment:
+      - name=value
+
+  gorilla:
+    iamge: ghcr.io/sharegoapp/gorilla:latest
