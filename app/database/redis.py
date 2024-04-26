@@ -22,14 +22,8 @@ if environment == "prod":
     # get from environment
     host = get_variable("REDIS_HOST")
     port = get_variable("REDIS_PORT")
+    username = get_variable("REDIS_USER")
     password = get_variable("REDIS_PASS")
 
-    print(host, password, port)
-
-    # establish connection 
-    # TODO: DO NOT PUSH THIS
-    client = redis.Redis(
-            host="redis-16338.c55.eu-central-1-1.ec2.redns.redis-cloud.com", 
-            port=16338, 
-            password="YvTl7daNIRKBQsq7fUrGZeTkPjxP4Ipx"
-        )
+    # establish connection
+    client = redis.Redis(host=host, port=port, username=username, password=password)
