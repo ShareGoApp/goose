@@ -36,11 +36,13 @@ async def handle_geo_request(message):
     # get suitable drivers
     docd = await mongo.get_drivers_in_range(pid)
 
-    next_msg = {
-        "passenger_id": pid,
-        "driver_ids": docd,
-    }
-    await redis.push_match_request(next_msg)
+    # push request for matching
+    await redis.push_match_request(
+        {
+            "passenger_id": pid,
+            "driver_ids": docd,
+        }
+    )
 
 
 # Handles incoming request for DTW compute
@@ -59,16 +61,14 @@ async def handle_match_request(message):
     # compute dtw from driver list
     results = [dtw(doc_nd, driver) for driver in drivers_nd]
 
-    print(results)
+    # todo: find the ride ID of the min driver
 
-    # prepare message
-    next_msg = {
-        "passenger_id": pid,
-        "driver_id": "661fc59bbc83e7536732d788",  # todo: change hardcoded
-        "min_err": min(results),
-    }
 
-    await redis.push_save_reqest(next_msg)
+    await redis.push_save_reqest({
+            "passenger_id": pid,
+            "driver_id": "661fc59bbc83e7536732d788", # todo: change hardcoded
+            "min_err": min(results),
+        })
 
 
 # Handles incoming req. for geo driver limitin
@@ -102,7 +102,7 @@ async def handle_save_request(message):
 async def listener(channel):
     async for message in channel.listen():
         if message["type"] == "message":
-            msg_type, data = destructure_message(message, logger)
+            msg_type, data = destructure_message(message)
 
             if msg_type == "mat_request":
                 await handle_match_request(data)
