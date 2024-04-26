@@ -12,9 +12,6 @@ client = MongoClient(db_str, tlsCAFile=certifi.where())
 
 # switch on environment
 match environment:
-    case 'dev':
-        database = client.get_database("dev")
-    case 'prod':
-        database = client.get_database("prod")
-    case _:
-        logger.error("unknown database requested")
+    case 'dev': database = client.get_database("db")
+    case 'prod': database = client.get_database("dev")
+    case _: logger.error("unknown database requested")

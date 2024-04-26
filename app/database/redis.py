@@ -5,8 +5,8 @@ import os
 # utils
 from utils.env import get_variable, environment
 
-# access environment variables
-if environment == "dev":
+
+def connect_local():
     logger.warning("[redis]: connecting to development database")
 
     # get from environment
@@ -16,9 +16,9 @@ if environment == "dev":
     redis_proto = int(os.getenv("REDIS_PROTOCOL"))
 
     # establish connection
-    client = redis.Redis(host=redis_host, port=redis_port, db=redis_db, protocol=redis_proto)
+    return redis.Redis(host=redis_host, port=redis_port, db=redis_db, protocol=redis_proto)
 
-if environment == "prod":
+def connect_cloud():
     logger.info("[redis]: connecting to production database")
 
     # get from environment
@@ -28,4 +28,10 @@ if environment == "prod":
     password = get_variable("REDIS_PASS")
 
     # establish connection
-    client = redis.Redis(host=host, port=port, username=username, password=password)
+    return redis.Redis(host=host, port=port, username=username, password=password)
+
+
+match environment:
+    case 'dev': client = connect_local()
+    case 'prod': client = connect_cloud()
+    case _: logger.error("[redis] failed to recognise env")

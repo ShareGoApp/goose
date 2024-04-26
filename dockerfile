@@ -22,4 +22,4 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 COPY ./app /code/app
 
 # execute run api command
-CMD ["python", "app/main.py"]
+CMD ["python", "app/main.py", "prod"]

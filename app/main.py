@@ -36,13 +36,13 @@ async def handle_geo_request(message):
     # get suitable drivers
     docd = await mongo.get_drivers_in_range(pid)
 
-    # push request for matching
-    await redis.push_match_request(
-        {
-            "passenger_id": pid,
-            "driver_ids": docd,
-        }
-    )
+    if len(docd) > 0: 
+        await redis.push_match_request({
+                "passenger_id": pid,
+                "driver_ids": docd,
+            })
+    else:
+        logger.warning("[save]: couldn't find any drivers in range")
 
 
 # Handles incoming request for DTW compute
@@ -62,13 +62,17 @@ async def handle_match_request(message):
     results = [dtw(doc_nd, driver) for driver in drivers_nd]
 
     # todo: find the ride ID of the min driver
+    # results -> [0.0001233, 0.12312412, 0.12123123]
+    # results -> [{"_id": "", "dist": 0.123123213}, {}]
 
+    # compute min
+    min_result = min(results) if len(results) > 0 else 0
 
     await redis.push_save_reqest({
-            "passenger_id": pid,
-            "driver_id": "661fc59bbc83e7536732d788", # todo: change hardcoded
-            "min_err": min(results),
-        })
+        "passenger_id": pid,
+        "driver_id": "661fc59bbc83e7536732d788", # todo: change hardcoded
+        "min_err": min_result,
+    })
 
 
 # Handles incoming req. for geo driver limitin
@@ -92,7 +96,7 @@ async def handle_save_request(message):
 
     # Insert report into the database
     document = final_dict.model_dump(by_alias=True, exclude=["id"])
-    result = db.sample_matches.insert_one(document)
+    result = db.matches.insert_one(document)
 
     if not result:
         logger.warning("was not able to create match result")
@@ -104,14 +108,12 @@ async def listener(channel):
         if message["type"] == "message":
             msg_type, data = destructure_message(message)
 
-            if msg_type == "mat_request":
-                await handle_match_request(data)
-            elif msg_type == "geo_request":
-                await handle_geo_request(data)
-            elif msg_type == "sav_request":
-                await handle_save_request(data)
-            else:
-                logger.warning("unknown message received")
+            print(msg_type)
+            match msg_type:
+                case "mat_request": await handle_match_request(data)
+                case "geo_request": await handle_geo_request(data)
+                case "sav_request": await handle_save_request(data)
+                case _: logger.warning("unknown message received")
 
 
 async def main():

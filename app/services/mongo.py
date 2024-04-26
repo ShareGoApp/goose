@@ -3,7 +3,7 @@ from bson import ObjectId
 class MongoService:
     def __init__(self, db, logger):
         self.db = db
-        self.collection = db["sample_rides"]
+        self.collection = db["rides"] # todo: change hardcoded
         self.logger = logger
 
     # query a specific passenger
