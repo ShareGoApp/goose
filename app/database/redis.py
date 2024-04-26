@@ -1,4 +1,3 @@
-from dotenv import load_dotenv
 from loguru import logger
 import redis.asyncio as redis
 import os
@@ -6,9 +5,10 @@ import os
 # utils
 from utils.env import get_variable, environment
 
-
 # access environment variables
 if environment == "dev":
+    logger.warning("[redis]: connecting to development database")
+
     # get from environment
     redis_host = os.getenv("REDIS_HOST")
     redis_port = int(os.getenv("REDIS_PORT"))
@@ -19,6 +19,8 @@ if environment == "dev":
     client = redis.Redis(host=redis_host, port=redis_port, db=redis_db, protocol=redis_proto)
 
 if environment == "prod":
+    logger.info("[redis]: connecting to production database")
+
     # get from environment
     host = get_variable("REDIS_HOST")
     port = get_variable("REDIS_PORT")

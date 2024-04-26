@@ -5,17 +5,31 @@ Matching Engine for Passenger-to-Driver matching at RideNow
 # Tools and Libraries
 
 ## Core Tooling
-* Orchestration: [Docker Compose](https://docs.docker.com/compose/)
-* Containerization: [Docker](https://docs.docker.com/manuals/)
-* Static Code Analysis: [CodeClimate](https://codeclimate.com/quality)
+
+- Orchestration: [Docker Compose](https://docs.docker.com/compose/)
+- Containerization: [Docker](https://docs.docker.com/manuals/)
+- Static Code Analysis: [CodeClimate](https://codeclimate.com/quality)
 
 ## Core libraries
-* **asyncio**: async runtime
-* **redis-py**: python redis toolkit
-* **pymongo**: mongodb driver for python
-* **loguru**: logging rotation, retention and compression
 
-# Docker build commands
+- **asyncio**: async runtime
+- **redis-py**: python redis toolkit
+- **pymongo**: mongodb driver for python
+- **loguru**: logging rotation, retention and compression
+
+## Running the service
+
+```bash
+# starts the service with development settigns
+python app/main.py
+```
+
+```bash
+# starts the service with production settigns
+python app/main.py prod
+```
+
+## Docker build commands
 
 ```bash
 # build docker image
@@ -25,10 +39,26 @@ docker build -t fredebode/goose .
 docker run -d --name goose -p 80:80 fredebode/goose:latest
 ```
 
-## GeoLocation Requests
-A successful GET method typically returns HTTP status code 200 (OK). If the resource cannot be found, the method should return 404 (Not Found).
+## geo-lookup event
 
-If the request was fulfilled but there is no response body included in the HTTP response, then it should return HTTP status code 204 (No Content); for example, a search operation yielding no matches might be implemented with this behavior.
+this service handles geo-lookup events ...
 
-## Match-making request
-If a POST method creates a new resource, it returns HTTP status code 201 (Created). The URI of the new resource is included in the Location header of the response. The response body contains a representation of the resource.
+```json
+geo_request:{"passenger_id": id, "max_radius": 500}
+```
+
+## match-making event
+
+this service handles match-making events ...
+
+```json
+mat_request:{"passenger_id": id, "driver_ids": [...ids]}
+```
+
+## match-save event
+
+this service handles match-save events ...
+
+```json
+sav_request:{"passenger_id": pid, "driver_id": did, "min_err": <computed_err>}
+```

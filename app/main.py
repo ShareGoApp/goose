@@ -1,6 +1,6 @@
 from tslearn.metrics import dtw
-from loguru import logger
 from datetime import datetime
+from loguru import logger
 import asyncio
 
 # database

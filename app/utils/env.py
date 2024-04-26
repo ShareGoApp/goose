@@ -1,9 +1,10 @@
 from dotenv import load_dotenv
 from loguru import logger
-import os
+import os, sys
 
 # Determine which environment to use (dev or prod)
-environment = os.getenv('ENVIRONMENT', 'prod')
+from_arg = sys.argv[1] if len(sys.argv) > 1 else 'dev'
+environment = os.getenv('ENVIRONMENT', from_arg)
 
 match environment:
     case 'dev':
