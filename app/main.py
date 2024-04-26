@@ -47,31 +47,31 @@ async def handle_geo_request(message):
 
 # Handles incoming request for DTW compute
 async def handle_match_request(message):
-    pid = message["passenger_id"]
     logger.info(f"[match] handling request for: {pid}")
 
     # get passenger from message
+    pid = message["passenger_id"]
     doc = await mongo.get_passenger(pid)
     doc_nd = geojson_to_ndarray(doc, logger)
 
+    def computed_zip(passenger, driver):
+        driver_nd = geojson_to_ndarray(driver, logger)
+        return {
+            "id": driver["_id"],
+            "dist": dtw(passenger, driver_nd)
+        }
+    
     # get drivers from message
     drivers = await mongo.get_driver_list(message["driver_ids"])
-    drivers_nd = [geojson_to_ndarray(driver, logger) for driver in drivers]
 
     # compute dtw from driver list
-    results = [dtw(doc_nd, driver) for driver in drivers_nd]
-
-    # todo: find the ride ID of the min driver
-    # results -> [0.0001233, 0.12312412, 0.12123123]
-    # results -> [{"_id": "", "dist": 0.123123213}, {}]
-
-    # compute min
-    min_result = min(results) if len(results) > 0 else 0
+    results = [computed_zip(doc_nd, driver) for driver in drivers]
+    optimal = min(results, key=lambda x: x["dist"]) if len(results) > 0 else {}
 
     await redis.push_save_reqest({
         "passenger_id": pid,
-        "driver_id": "661fc59bbc83e7536732d788", # todo: change hardcoded
-        "min_err": min_result,
+        "driver_id": str(optimal['id']),
+        "min_err": optimal['dist'],
     })
 
 

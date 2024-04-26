@@ -3,7 +3,8 @@ import redis.asyncio as redis
 import os
 
 # utils
-from utils.env import get_variable, environment
+from utils.env import get_variable
+from utils.env import environment
 
 
 def connect_local():
@@ -30,7 +31,7 @@ def connect_cloud():
     # establish connection
     return redis.Redis(host=host, port=port, username=username, password=password)
 
-
+# select client based on env
 match environment:
     case 'dev': client = connect_local()
     case 'prod': client = connect_cloud()
