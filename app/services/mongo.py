@@ -1,9 +1,10 @@
 from bson import ObjectId
 
+
 class MongoService:
     def __init__(self, db, logger):
         self.db = db
-        self.collection = db["rides"] # todo: change hardcoded
+        self.collection = db["rides"]  # todo: change hardcoded
         self.logger = logger
 
     # query a specific passenger
@@ -31,7 +32,6 @@ class MongoService:
         # Query for the document by its _id field
         document = self.collection.find_one({"_id": id})
 
-
         if document:
             return document
 
@@ -43,19 +43,15 @@ class MongoService:
         # Query documents within the specified distance from the reference point
         query = {
             "_id": {"$ne": ObjectId(id)},  # Exclude document with the specified _id
-            "features.geometry.coordinates": {
-                "$geoWithin": {
-                    "$centerSphere": [[start_lng, start_lat], max_dist / 6378137.0]
-                }
-            }
+            "features.geometry.coordinates": {"$geoWithin": {"$centerSphere": [[start_lng, start_lat], max_dist / 6378137.0]}},
         }
 
         # Perform the query
         cursor = self.collection.find(query)
 
-        if cursor:
-            list_ids = [str(doc["_id"]) for doc in cursor]
-            return list_ids
+        #if cursor:
+        #    list_ids = [str(doc["_id"]) for doc in cursor]
+        #    return list_ids
 
         return []
 
