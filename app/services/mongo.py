@@ -9,13 +9,17 @@ class MongoService:
 
     # query a specific passenger
     async def get_passenger(self, id):
-        document_id = ObjectId(id)
-        document = self.collection.find_one({"_id": document_id})
+        try: 
+            document_id = ObjectId(id)
+            document = self.collection.find_one({"_id": document_id})
 
-        if document:
-            return document
-        else:
-            self.logger.error("no document found")
+            if document:
+                return document
+            else:
+                self.logger.error(f"no passenger found for: {id}")
+        except:
+            self.logger.error("failed")
+
 
     # query a list of drivers by id
     async def get_driver_list(self, ids):
@@ -49,9 +53,9 @@ class MongoService:
         # Perform the query
         cursor = self.collection.find(query)
 
-        #if cursor:
-        #    list_ids = [str(doc["_id"]) for doc in cursor]
-        #    return list_ids
+        if cursor:
+            list_ids = [str(doc["_id"]) for doc in cursor]
+            return list_ids
 
         return []
 

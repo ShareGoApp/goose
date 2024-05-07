@@ -1,5 +1,7 @@
 # path: utils/time.py
 from datetime import datetime
+from tslearn.metrics import dtw
+from loguru import logger
 import numpy as np
 import json
 
@@ -12,7 +14,7 @@ def convert_to_unix(timestamp) -> float:
 
 
 # convert geojson point features to numpy.ndarray
-def geojson_to_ndarray(geojson_data, logger):
+def geojson_to_ndarray(geojson_data):
     try:
         data = []
         for feature in geojson_data["features"]:
@@ -41,3 +43,8 @@ def destructure_message(message):
         return type_info, payload
     except:
         return
+
+
+def map_distance(passenger, driver):
+    driver_matrix = geojson_to_ndarray(driver)
+    return {id: driver["_id"], "dist": dtw(passenger, driver_matrix)}
