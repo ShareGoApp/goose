@@ -22,7 +22,7 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 COPY ./app /code/app
 
 # expose an arbitrary port (it won't be used for incoming connections)
-EXPOSE 8080
+# EXPOSE 8080
 
 # execute run api command
 CMD ["python", "app/main.py", "prod"]
