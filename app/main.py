@@ -10,7 +10,7 @@ from database.mongodb import database as db
 
 # services
 from services.mongo import MongoService
-from services.redis import RedisService
+# from services.redis import RedisService
 
 # utils
 from utils.format import geojson_to_ndarray
@@ -89,7 +89,7 @@ async def handle_match_request(message):
 
     # get passenger from message
     doc = await mongo.get_passenger(pid)
-    doc_nd = geojson_to_ndarray(doc, logger)
+    doc_nd = geojson_to_ndarray(doc)
     
     # get drivers from message
     drivers = await mongo.get_driver_list(message["driver_ids"])
