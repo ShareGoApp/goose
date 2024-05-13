@@ -158,6 +158,8 @@ async def main():
     # Start the retry coroutine
     # asyncio.create_task(retry_pending())
 
+    print("Hello Watchtower")
+
     # start listener
     await asyncio.gather(
         listener(pubsub),
