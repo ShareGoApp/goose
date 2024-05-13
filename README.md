@@ -66,3 +66,7 @@ sav_request:{"passenger_id": pid, "driver_id": did, "min_err": <computed_err>}
 ## PubSub vs Streams
 
 Redis Pub/Sub and Redis Streams are two different features provided by Redis for messaging and event-driven architectures. While they can be used for similar purposes, there are some key differences between them. - [Redis pub/sub vs Streams](https://medium.com/@osama94/redis-pub-sub-vs-streams-fb1af6ff4b85)
+
+# Notebooks
+
+Requires a mapbox key saved as .mapbox_token in the same directory as explore.ipynb

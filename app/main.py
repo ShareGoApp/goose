@@ -155,16 +155,12 @@ async def main():
     pubsub = redis.pubsub()
     await pubsub.subscribe("main")
 
-    # Start the retry coroutine
-    # asyncio.create_task(retry_pending())
-
-    print("Hello Watchtower")
+    # create tasks from coroutines
+    task_listen = asyncio.create_task(listener(pubsub))
+    task_retry = asyncio.create_task(retry_pending())
 
     # start listener
-    await asyncio.gather(
-        listener(pubsub),
-        retry_pending()
-        )
+    await asyncio.gather(task_listen,task_retry)
 
 
 if __name__ == "__main__":
