@@ -2,6 +2,7 @@
 from datetime import datetime
 from tslearn.metrics import dtw
 from loguru import logger
+import pandas as pd
 import numpy as np
 import json
 
@@ -32,6 +33,19 @@ def geojson_to_ndarray(geojson_data):
         logger.error(f"An error occurred: {str(e)}")
         return None
 
+
+def geojson_to_df(data) -> pd.DataFrame:
+    # Extract passenger data
+    coordinates = data["route"]["shape"]["coordinates"]
+    # timestamps = [datetime.isoformat(ts) for ts in data["route"]["timestamps"]]
+
+    # Create DataFrame
+    df = pd.DataFrame({
+        "lat": [coord[1] for coord in coordinates],
+        "lon": [coord[0] for coord in coordinates],
+    })
+
+    return df
 
 # destructuring incoming messages
 def destructure_message(message):
