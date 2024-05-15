@@ -32,6 +32,7 @@ pluggy==1.4.0
 prompt-toolkit==3.0.43
 psutil==5.9.8
 ptyprocess==0.7.0
+pydantic-extra-types==2.6.0
 pure-eval==0.2.2
 pydantic==2.7.0
 pydantic_core==2.18.1
