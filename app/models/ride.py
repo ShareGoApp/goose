@@ -1,10 +1,8 @@
-import uuid
-from pydantic import BaseModel, Field
 from pydantic_extra_types.coordinate import Coordinate
-from enum import Enum
+from pydantic import BaseModel, Field
 from datetime import datetime, UTC
-
-from models.user import User
+from enum import Enum
+import uuid
 
 class LineString(BaseModel):
     type: str

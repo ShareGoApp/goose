@@ -1,9 +1,10 @@
-import uuid
+from pydantic_extra_types.coordinate import Coordinate
+from pydantic import BaseModel, Field
 from datetime import datetime, UTC
 from enum import Enum
-from pydantic import BaseModel, Field
-from pydantic_extra_types.coordinate import Coordinate
+import uuid
 
+# models
 from models.ride import Address, Route
 
 class RideSearch(BaseModel):
