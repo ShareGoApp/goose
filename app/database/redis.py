@@ -1,11 +1,10 @@
-from loguru import logger
 import redis.asyncio as redis
+from loguru import logger
 import os
 
 # utils
 from utils.env import get_variable
 from utils.env import environment
-
 
 def connect_local():
     logger.warning("[redis]: connecting to development database")

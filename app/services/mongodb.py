@@ -1,7 +1,7 @@
 from loguru import logger
+from datetime import datetime
 from bson import ObjectId
 from uuid import UUID
-from datetime import datetime
 import json
 
 # models
@@ -12,19 +12,6 @@ class MongoService:
     def __init__(self, db, logger):
         self.db = db
 
-    # query a specific passenger
-    async def get_passenger(self, id):
-        try: 
-            document_id = ObjectId(id)
-            document = self.db["users"].find_one({"_id": document_id})
-
-            if document:
-                return document
-            else:
-                logger.error(f"no passenger found for: {id}")
-        except:
-            logger.error("failed")
-
     # query for a specific ride
     async def get_ride(self, id: str):
         try:
@@ -34,13 +21,12 @@ class MongoService:
             if not document:
                 logger.warning(f"no ride found for: {id}")
                 return
-            
+
             return document
         except Exception as e:
             logger.error(e)
             logger.error(f"exception caught while retrieving ride: {id}")
 
-        
     async def get_in_timeframe(self, min: datetime, max: datetime):
         # Construct the query to find rides within the specified range
         query = {"departure": {"$gte": min, "$lte": max}}
@@ -53,18 +39,17 @@ class MongoService:
         if results:
             logger.warning(f"No ride requested between: {min.isoformat()}")
 
-
     # [pubsub] Handles incoming req. for match creation
     async def create_match(self, match_tuple: tuple):
         temp = {}
 
         # populate match
-        temp["similarity"]   = match_tuple[0]
+        temp["similarity"] = match_tuple[0]
         temp["passenger_id"] = match_tuple[1]
-        temp["search_id"]    = match_tuple[2]
-        temp["ride_id"]      = match_tuple[3]
-        temp["seen"]         = False
-        temp["created_at"]   = datetime.now()
+        temp["search_id"] = match_tuple[2]
+        temp["ride_id"] = match_tuple[3]
+        temp["seen"] = False
+        temp["created_at"] = datetime.now()
 
         # Validate and create a Report instance
         populated = RideMatch(**temp)
@@ -82,11 +67,21 @@ class MongoService:
             msg = f"failed to create match: {match_tuple[3]}"
             logger.success(f"[match]: {msg}")
             return None
-        
-
 
     # ================= DEPRECATED =======================
 
+    # query a specific passenger
+    async def get_passenger(self, id):
+        try:
+            document_id = ObjectId(id)
+            document = self.db["users"].find_one({"_id": document_id})
+
+            if document:
+                return document
+            else:
+                logger.error(f"no passenger found for: {id}")
+        except:
+            logger.error("failed")
 
     # query a list of drivers by id
     async def get_driver_list(self, ids):
