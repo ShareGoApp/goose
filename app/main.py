@@ -217,7 +217,7 @@ async def main():
 
     # create tasks from coroutines
     task_listen = asyncio.create_task(listener(pubsub))
-    task_retry = asyncio.create_task(retry_pending)
+    task_retry = asyncio.create_task(retry_pending())
 
     # execute asyncio tasks
     await asyncio.gather(task_listen)
