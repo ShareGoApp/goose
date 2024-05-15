@@ -3,7 +3,7 @@ from enum import Enum
 import uuid
 from pydantic import BaseModel, Field
 
-from app.models.ride import Route, Stop
+from models.ride import Route, Stop
 
 class RideRequestStatus(str, Enum):
     pending = "pending"

@@ -4,7 +4,7 @@ from pydantic_extra_types.coordinate import Coordinate
 from enum import Enum
 from datetime import datetime, UTC
 
-from app.models.user import User
+from models.user import User
 
 class LineString(BaseModel):
     type: str

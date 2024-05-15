@@ -47,15 +47,16 @@ def geojson_to_df(data) -> pd.DataFrame:
 
     return df
 
+
 # destructuring incoming messages
 def destructure_message(message):
     try:
         # Deserialize message, ex: geo_request:{json}
         data = message["data"].decode("utf-8")
         type_info, payload = data.split(":", 1)
-        payload = json.loads(payload)
         return type_info, payload
     except:
+        logger.warning("failed to desctructure messages from pubsub")
         return
 
 

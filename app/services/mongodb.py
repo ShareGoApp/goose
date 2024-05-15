@@ -1,7 +1,11 @@
 from loguru import logger
 from bson import ObjectId
 from uuid import UUID
+from datetime import datetime
+import json
 
+# models
+from models.ride_match import RideMatch
 
 
 class MongoService:
@@ -21,20 +25,67 @@ class MongoService:
         except:
             logger.error("failed")
 
-
     # query for a specific ride
     async def get_ride(self, id: str):
         try:
             uuid_id = UUID(id)
-            document = self.db["rides"].find_one("_id", uuid_id)
+            document = self.db.rides.find_one({"_id": uuid_id})
 
-            if document:
-                return document
-            else:
+            if not document:
                 logger.warning(f"no ride found for: {id}")
+                return
+            
+            return document
+        except Exception as e:
+            logger.error(e)
+            logger.error(f"exception caught while retrieving ride: {id}")
 
-        except:
-            logger.error(f"no ride found for: {id}")
+        
+    async def get_in_timeframe(self, min: datetime, max: datetime):
+        # Construct the query to find rides within the specified range
+        query = {"departure": {"$gte": min, "$lte": max}}
+
+        # Perform the query
+        results = self.db.ride_searches.find(query)
+
+        return self.db.ride_searches.find(query)
+
+        if results:
+            logger.warning(f"No ride requested between: {min.isoformat()}")
+
+
+    # [pubsub] Handles incoming req. for match creation
+    async def create_match(self, match_tuple: tuple):
+        temp = {}
+
+        # populate match
+        temp["similarity"]   = match_tuple[0]
+        temp["passenger_id"] = match_tuple[1]
+        temp["search_id"]    = match_tuple[2]
+        temp["ride_id"]      = match_tuple[3]
+        temp["seen"]         = False
+        temp["created_at"]   = datetime.now()
+
+        # Validate and create a Report instance
+        populated = RideMatch(**temp)
+
+        # Insert report into the database
+        document = populated.model_dump(by_alias=True, exclude=["id"])
+        result = self.db.matches.insert_one(document)
+
+        if result:
+            msg = f"successfully created match: {result["inserted_id"]}"
+            serialized_msg = json.dumps(msg)
+            logger.success(f"[match]: {msg}")
+            return serialized_msg
+        else:
+            msg = f"failed to create match: {match_tuple[3]}"
+            logger.success(f"[match]: {msg}")
+            return None
+        
+
+
+    # ================= DEPRECATED =======================
 
 
     # query a list of drivers by id
@@ -74,7 +125,3 @@ class MongoService:
             return list_ids
 
         return []
-
-    # save a new document for match
-    async def create_match_document(self, id):
-        pass

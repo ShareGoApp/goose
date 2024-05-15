@@ -4,7 +4,7 @@ from enum import Enum
 from pydantic import BaseModel, Field
 from pydantic_extra_types.coordinate import Coordinate
 
-from app.models.ride import Address, Route
+from models.ride import Address, Route
 
 class RideSearch(BaseModel):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, alias="_id")
