@@ -74,7 +74,7 @@ class MongoService:
         result = self.db.matches.insert_one(document)
 
         if result:
-            msg = f"successfully created match: {result["inserted_id"]}"
+            msg = f"successfully created match: {result['inserted_id']}"
             serialized_msg = json.dumps(msg)
             logger.success(f"[match]: {msg}")
             return serialized_msg
