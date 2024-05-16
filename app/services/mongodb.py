@@ -1,11 +1,7 @@
 from loguru import logger
 from datetime import datetime
 from bson import ObjectId
-<<<<<<< Updated upstream
-from uuid import UUID, uuid4
-=======
 import uuid
->>>>>>> Stashed changes
 import json
 
 # models
@@ -47,11 +43,7 @@ class MongoService:
         temp = {}
 
         # populate match
-<<<<<<< Updated upstream
-        temp["_id"] = uuid4()
-=======
         temp["_id"] = uuid.uuid4()
->>>>>>> Stashed changes
         temp["similarity"] = match_tuple[0]
         temp["passenger_id"] = match_tuple[1]
         temp["search_id"] = match_tuple[2]
