@@ -1,7 +1,7 @@
 from loguru import logger
 from datetime import datetime
 from bson import ObjectId
-from uuid import UUID
+from uuid import UUID, uuid4
 import json
 
 # models
@@ -44,6 +44,7 @@ class MongoService:
         temp = {}
 
         # populate match
+        temp["_id"] = uuid4()
         temp["similarity"] = match_tuple[0]
         temp["passenger_id"] = match_tuple[1]
         temp["search_id"] = match_tuple[2]
@@ -55,11 +56,11 @@ class MongoService:
         populated = RideMatch(**temp)
 
         # Insert report into the database
-        document = populated.model_dump(by_alias=True, exclude=["id"])
-        result = self.db.matches.insert_one(document)
+        document = populated.model_dump(by_alias=True)
+        result = self.db.ride_matches.insert_one(document)
 
-        if result:
-            msg = f"successfully created match: {result['inserted_id']}"
+        if result.modified_count == 1:
+            msg = f"successfully created match"
             serialized_msg = json.dumps(msg)
             logger.success(f"[match]: {msg}")
             return serialized_msg
