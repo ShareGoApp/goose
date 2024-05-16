@@ -1,7 +1,11 @@
 from loguru import logger
 from datetime import datetime
 from bson import ObjectId
+<<<<<<< Updated upstream
 from uuid import UUID, uuid4
+=======
+import uuid
+>>>>>>> Stashed changes
 import json
 
 # models
@@ -15,7 +19,7 @@ class MongoService:
     # query for a specific ride
     async def get_ride(self, id: str):
         try:
-            uuid_id = UUID(id)
+            uuid_id = uuid.UUID(id)
             document = self.db.rides.find_one({"_id": uuid_id})
 
             if not document:
@@ -33,7 +37,6 @@ class MongoService:
 
         # Perform the query
         results = self.db.ride_searches.find(query)
-
         return self.db.ride_searches.find(query)
 
         if results:
@@ -44,7 +47,11 @@ class MongoService:
         temp = {}
 
         # populate match
+<<<<<<< Updated upstream
         temp["_id"] = uuid4()
+=======
+        temp["_id"] = uuid.uuid4()
+>>>>>>> Stashed changes
         temp["similarity"] = match_tuple[0]
         temp["passenger_id"] = match_tuple[1]
         temp["search_id"] = match_tuple[2]

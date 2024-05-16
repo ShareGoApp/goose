@@ -4,6 +4,7 @@ from datetime import datetime, UTC
 from enum import Enum
 import uuid
 
+
 class LineString(BaseModel):
     type: str
     coordinates: list[list[float]]
@@ -44,7 +45,7 @@ class RideStatus(str, Enum):
     cancelled = "cancelled"
 
 class Ride(BaseModel):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, alias="_id")
+    id: uuid.UUID = Field(alias="_id")
     driver: uuid.UUID # User
     seats_total: int = Field(..., description="Free seats, drivers seat is not counted")
     seats_available: int
