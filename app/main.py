@@ -183,6 +183,7 @@ async def handle_correlation(id: str):
 
     short_list = []
     for c in candidates:
+        print(c) #nocheckin
         df_candidate = geojson_to_df(c)
         distance = dtw(df_ride, df_candidate)              # compute err with dynamic-time warping
         match_tuple = (distance, c["passenger"], c["id"], ride["id"])
