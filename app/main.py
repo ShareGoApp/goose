@@ -123,7 +123,7 @@ async def handle_temporal(id: str):
     await rdb.json().set(id, ".", {})                                   # create object root
     await rdb.json().set(id, ".ride", ride_serialized)                  # store ride request for reuse
     await rdb.json().set(id, ".candidates", candidates_serialized)      # store list of initial candidates
-    await rdb.publish("dev", f"spa_request:{id}")                       # message start spatial analysis
+    await rdb.publish("main", f"spa_request:{id}")                       # message start spatial analysis
     
 
 async def handle_spatial(id: str):
@@ -197,7 +197,7 @@ async def handle_spatial(id: str):
 
     # store results in KV-store
     await rdb.json().set(id, ".candidates", on_route_serialized)    # store list of revised candidates
-    await rdb.publish("dev", f"cor_request:{id}")                  # message start route correlation analysis
+    await rdb.publish("main", f"cor_request:{id}")                  # message start route correlation analysis
 
 
 # ================ VARIATION SPATIAL ================
