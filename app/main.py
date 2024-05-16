@@ -123,7 +123,7 @@ async def handle_temporal(id: str):
     await rdb.json().set(id, ".", {})                                   # create object root
     await rdb.json().set(id, ".ride", ride_serialized)                  # store ride request for reuse
     await rdb.json().set(id, ".candidates", candidates_serialized)      # store list of initial candidates
-    await rdb.publish("main", f"spa_request:{id}")                       # message start spatial analysis
+    await rdb.publish("main", f"spa_request:{id}")                      # message start spatial analysis
     
 
 async def handle_spatial(id: str):
@@ -301,7 +301,7 @@ async def main():
 
     # subscribe to main channel
     pubsub = rdb.pubsub()
-    await pubsub.subscribe("dev")
+    await pubsub.subscribe("main")
 
     # create tasks from coroutines
     task_listen = asyncio.create_task(listener(pubsub))
