@@ -59,7 +59,7 @@ class MongoService:
         document = populated.model_dump(by_alias=True)
         result = self.db.ride_matches.insert_one(document)
 
-        if result.modified_count == 1:
+        if result.inserted_id:
             msg = f"successfully created match"
             serialized_msg = json.dumps(msg)
             logger.success(f"[match]: {msg}")
